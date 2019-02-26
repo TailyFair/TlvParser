@@ -54,7 +54,7 @@ namespace TlvParser
             return tlvs.ToArray();
         }
 
-        public TlvType ParseType(byte input)
+        private TlvType ParseType(byte input)
         {
             TlvType type;
             byte mask = 0b1100_0000; // Mask to check Bits 7-6
@@ -80,7 +80,7 @@ namespace TlvParser
             return type;
         }
 
-        public int ParseIdentifier(BinaryReader reader, byte input)
+        private int ParseIdentifier(BinaryReader reader, byte input)
         {
             int identifier;
             byte mask = 0b0010_0000; // Mask to check Bit 5
@@ -100,7 +100,7 @@ namespace TlvParser
             return identifier;
         }
 
-        public int ParseLength(BinaryReader reader, byte input)
+        private int ParseLength(BinaryReader reader, byte input)
         {
             int length;
             byte mask = 0b0001_1000; // Mask to check Bits 4-3
@@ -128,7 +128,7 @@ namespace TlvParser
             return length;
         }
 
-        public Tlv CreateTlv(BinaryReader reader, TlvType type, int identifier, int length)
+        private Tlv CreateTlv(BinaryReader reader, TlvType type, int identifier, int length)
         {
             Tlv result;
 
