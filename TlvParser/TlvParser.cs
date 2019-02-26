@@ -74,7 +74,7 @@ namespace TlvParser
                     type = TlvType.RESOURCE_VALUE;
                     break;
                 default:
-                    throw new Exception("Unkown type");
+                    throw new TlvException($"Unkown type: {input & mask}");
             }
 
             return type;
@@ -94,7 +94,7 @@ namespace TlvParser
                     identifier = reader.ReadUInt16();
                     break;
                 default:
-                    throw new Exception("Unkown identifier");
+                    throw new TlvException($"Unkown identifier: {input & mask}");
             }
 
             return identifier;
@@ -122,7 +122,7 @@ namespace TlvParser
                     length = (b << 16) | s;
                     break;
                 default:
-                    throw new Exception("Unknown length");
+                    throw new TlvException($"Unknown length: {input & mask}");
             }
 
             return length;
