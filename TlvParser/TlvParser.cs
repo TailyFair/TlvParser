@@ -38,17 +38,25 @@ namespace TlvParser
         {
             List<Tlv> tlvs = new List<Tlv>();
 
-            while ((stream.Length - stream.Position) > 0)
+            try
             {
-                byte typeByte = reader.ReadByte();
+                while ((stream.Length - stream.Position) > 0)
+                {
+                    byte typeByte = reader.ReadByte();
 
-                TlvType type = ParseType(typeByte);
-                int identifier = ParseIdentifier(reader, typeByte);
-                int length = ParseLength(reader, typeByte);
+                    TlvType type = ParseType(typeByte);
+                    int identifier = ParseIdentifier(reader, typeByte);
+                    int length = ParseLength(reader, typeByte);
 
-                Tlv tlv = CreateTlv(reader, type, identifier, length);
+                    Tlv tlv = CreateTlv(reader, type, identifier, length);
 
-                tlvs.Add(tlv);
+                    tlvs.Add(tlv);
+
+                }
+            }
+            catch (EndOfStreamException e)
+            {
+                throw new TlvException($"Failed to parse TLV: {Utilities.ByteArrayToString(input_bytes)}", e);
             }
 
             return tlvs.ToArray();
