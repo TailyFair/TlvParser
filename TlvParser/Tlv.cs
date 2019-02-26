@@ -6,7 +6,16 @@ namespace TlvParser
     {
         private TlvType type;
         private int identifier;
+        Tlv[] children;
         private byte[] value;
+
+        public Tlv(TlvType type, int identifier, Tlv[] children, byte[] value)
+        {
+            this.type = type;
+            this.identifier = identifier;
+            this.children = children;
+            this.value = value;
+        }
     }
 
     public enum TlvType
