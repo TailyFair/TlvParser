@@ -11,23 +11,44 @@ namespace TlvParser
         /// </summary>
         public Tlv[] Parse(byte[] input_bytes)
         {
-            List<Tlv> tlvs = new List<Tlv>();
+            Tlv[] tlvs;
 
             using (MemoryStream stream = new MemoryStream(input_bytes))
-            using (ReversedBinaryReader reader = new ReversedBinaryReader(stream))
             {
-                while ((stream.Length - stream.Position) > 0)
+                if (BitConverter.IsLittleEndian)
                 {
-                    byte typeByte = reader.ReadByte();
-
-                    TlvType type = ParseType(typeByte);
-                    int identifier = ParseIdentifier(reader, typeByte);
-                    int length = ParseLength(reader, typeByte);
-
-                    Tlv tlv = CreateTlv(reader, type, identifier, length);
-
-                    tlvs.Add(tlv);
+                    using (BinaryReader reader = new BinaryReader(stream))
+                    {
+                        tlvs = ParseTlv(stream, reader, input_bytes);
+                    }
                 }
+                else
+                {
+                    using (ReversedBinaryReader reader = new ReversedBinaryReader(stream))
+                    {
+                        tlvs = ParseTlv(stream, reader, input_bytes);
+                    }
+                }
+            }
+
+            return tlvs;
+        }
+
+        private Tlv[] ParseTlv(MemoryStream stream, BinaryReader reader, byte[] input_bytes)
+        {
+            List<Tlv> tlvs = new List<Tlv>();
+
+            while ((stream.Length - stream.Position) > 0)
+            {
+                byte typeByte = reader.ReadByte();
+
+                TlvType type = ParseType(typeByte);
+                int identifier = ParseIdentifier(reader, typeByte);
+                int length = ParseLength(reader, typeByte);
+
+                Tlv tlv = CreateTlv(reader, type, identifier, length);
+
+                tlvs.Add(tlv);
             }
 
             return tlvs.ToArray();
