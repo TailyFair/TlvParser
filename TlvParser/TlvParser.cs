@@ -50,5 +50,25 @@ namespace TlvParser
 
             return type;
         }
+
+        public int ParseIdentifier(BinaryReader reader, byte input)
+        {
+            int identifier;
+            byte mask = 0b0010_0000; // Mask to check Bit 5
+
+            switch (input & mask)
+            {
+                case 0b0000_0000:
+                    identifier = reader.ReadByte();
+                    break;
+                case 0b0010_0000:
+                    identifier = reader.ReadUInt16();
+                    break;
+                default:
+                    throw new Exception("Unkown identifier");
+            }
+
+            return identifier;
+        }
     }
 }
