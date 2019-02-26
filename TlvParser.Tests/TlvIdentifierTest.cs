@@ -22,10 +22,9 @@ namespace TlvParser.Tests
             int result;
 
             using (MemoryStream stream = new MemoryStream(Utilities.StringToByteArray(input)))
-            using (BinaryReader reader = new BinaryReader(stream))
+            using (ReversedBinaryReader reader = new ReversedBinaryReader(stream))
             {
                 byte typeByte = reader.ReadByte();
-
                 result = _parser.ParseIdentifier(reader, typeByte);
             }
 

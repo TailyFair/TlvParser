@@ -14,7 +14,7 @@ namespace TlvParser
             List<Tlv> tlvs = new List<Tlv>();
 
             using (MemoryStream stream = new MemoryStream(input_bytes))
-            using (BinaryReader reader = new BinaryReader(stream))
+            using (ReversedBinaryReader reader = new ReversedBinaryReader(stream))
             {
                 while ((stream.Length - stream.Position) > 0)
                 {
