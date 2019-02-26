@@ -24,5 +24,31 @@ namespace TlvParser
 
             return tlvs.ToArray();
         }
+
+        public TlvType ParseType(byte input)
+        {
+            TlvType type;
+            byte mask = 0b1100_0000; // Mask to check Bits 7-6
+
+            switch (input & mask)
+            {
+                case 0b0000_0000:
+                    type = TlvType.OBJECT_INSTANCE;
+                    break;
+                case 0b0100_0000:
+                    type = TlvType.RESOURCE_INSTANCE;
+                    break;
+                case 0b1000_0000:
+                    type = TlvType.MULTIPLE_RESOURCE;
+                    break;
+                case 0b1100_0000:
+                    type = TlvType.RESOURCE_VALUE;
+                    break;
+                default:
+                    throw new Exception("Unkown type");
+            }
+
+            return type;
+        }
     }
 }
