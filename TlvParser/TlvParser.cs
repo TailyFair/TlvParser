@@ -56,7 +56,7 @@ namespace TlvParser
             }
             catch (EndOfStreamException e)
             {
-                throw new TlvException($"Failed to parse TLV: {Utilities.ByteArrayToString(input_bytes)}", e);
+                throw new TlvException($"Failed to parse TLV: 0x{Utilities.ByteArrayToString(input_bytes)}", e);
             }
 
             return tlvs.ToArray();
@@ -174,7 +174,7 @@ namespace TlvParser
             else if (input.Length == 8)
                 result = BitConverter.ToInt64(input, 0);
             else
-                throw new TlvException($"Failed to decode integer: {input}");
+                throw new TlvException($"Failed to decode integer: 0x{Utilities.ByteArrayToString(input)}");
 
             return result;
         }
@@ -192,7 +192,7 @@ namespace TlvParser
             else if (input.Length == 8)
                 result = BitConverter.ToUInt64(input, 0);
             else
-                throw new TlvException($"Failed to decode unsinged integer: {input}");
+                throw new TlvException($"Failed to decode unsinged integer: 0x{Utilities.ByteArrayToString(input)}");
 
             return result;
         }
@@ -206,22 +206,22 @@ namespace TlvParser
             else if (input.Length == 8)
                 result = BitConverter.ToDouble(input, 0);
             else
-                throw new TlvException($"Failed to decode float: {input}");
+                throw new TlvException($"Failed to decode float: 0x{Utilities.ByteArrayToString(input)}");
 
             return result;
         }
 
         public static bool DecodeBoolean(byte[] input)
         {
-            bool result;
-            if (input[0] == 0b0000_0001)
-                result = true;
-            else if (input[1] == 0b0000_0000)
-                result = false;
-            else
-                throw new TlvException($"Failed to decode boolean: {input}");
+            if (input.Length == 1)
+            {
+                if (input[0] == 0b0000_0001)
+                    return true;
+                else if (input[0] == 0b0000_0000)
+                    return false;
+            }
 
-            return result;
+            throw new TlvException($"Failed to decode boolean: 0x{Utilities.ByteArrayToString(input)}");
         }
 
         public static byte[] DecodeOpaque(byte[] input)
@@ -251,7 +251,7 @@ namespace TlvParser
             }
             catch (Exception)
             {
-                throw new TlvException($"Failed to decode Object link: {input}");
+                throw new TlvException($"Failed to decode Object link: 0x{Utilities.ByteArrayToString(input)}");
             }
 
             return Tuple.Create(objectId, objectInstanceId);
