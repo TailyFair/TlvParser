@@ -11,6 +11,7 @@ namespace TlvParser
         /// </summary>
         public static byte[] StringToByteArray(string hex)
         {
+            hex = hex.Trim().Replace(" ", string.Empty); // modification
             int NumberChars = hex.Length;
             byte[] bytes = new byte[NumberChars / 2];
             for (int i = 0; i < NumberChars; i += 2)
