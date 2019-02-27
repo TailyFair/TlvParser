@@ -14,53 +14,78 @@ namespace TlvParser.Tests
             _parser = new Parser();
         }
 
-        [Theory]
-        [InlineData(0b0001_0000, TlvType.OBJECT_INSTANCE)]
-        [InlineData(0b0100_0100, TlvType.RESOURCE_INSTANCE)]
-        [InlineData(0b1010_1010, TlvType.MULTIPLE_RESOURCE)]
-        [InlineData(0b1110_0110, TlvType.RESOURCE_VALUE)]
-        public void TestTlvType(byte input, TlvType expected)
+        [Fact]
+        public void TestResourceValue()
         {
-            TlvType result = _parser.ParseType(input);
+            // Table 7.4.3.1-1 example. First Tlv
+            Tlv[] result = _parser.Parse(Utilities.StringToByteArray("C800144F70656E204D6F62696C6520416C6C69616E6365"));
 
-            Assert.Equal(expected, result);
+            Tlv expected = new Tlv(TlvType.RESOURCE_VALUE, 0x00, null, Utilities.StringToByteArray("4F70656E204D6F62696C6520416C6C69616E6365"));
+
+            Assert.Equal(expected, result[0]);
+        }
+
+        [Fact]
+        public void TestMultipleResource()
+        {
+            // Table 7.4.3.2-1 example. Taken from middle section
+            Tlv[] result = _parser.Parse(Utilities.StringToByteArray("88070842000ED842011388"));
+
+            Tlv expected = new Tlv(TlvType.MULTIPLE_RESOURCE, 0x07,
+                new Tlv[] {
+                    new Tlv(TlvType.RESOURCE_INSTANCE, 0x00, null, Utilities.StringToByteArray("0ED8")),
+                    new Tlv(TlvType.RESOURCE_INSTANCE, 0x01, null, Utilities.StringToByteArray("1388")),
+                }, null);
+
+            Assert.Equal(expected, result[0]);
+        }
+
+        [Fact]
+        public void TestObjectInstance()
+        {
+            // Table 7.4.3.2-3 example. With object children length fixed (0x0D -> 0x0F)
+            Tlv[] result = _parser.Parse(Utilities.StringToByteArray("08000FC10001C40100015180C10601C10755"));
+
+            Tlv expected = new Tlv(TlvType.OBJECT_INSTANCE, 0x00,
+                new Tlv[] {
+                    new Tlv(TlvType.RESOURCE_VALUE, 0x00, null, Utilities.StringToByteArray("01")),
+                    new Tlv(TlvType.RESOURCE_VALUE, 0x01, null, Utilities.StringToByteArray("00015180")),
+                    new Tlv(TlvType.RESOURCE_VALUE, 0x06, null, Utilities.StringToByteArray("01")),
+                    new Tlv(TlvType.RESOURCE_VALUE, 0x07, null, Utilities.StringToByteArray("55")),
+                }, null);
+
+            Assert.Equal(expected, result[0]);
+        }
+
+        [Fact]
+        public void TestObjectInstance2()
+        {
+            // Table 7.4.3.2-2 example. First object instance
+            Tlv[] result = _parser.Parse(Utilities.StringToByteArray("08000EC10001C101008302417F07C1037F"));
+
+            Tlv expected = new Tlv(TlvType.OBJECT_INSTANCE, 0x00,
+                new Tlv[] {
+                    new Tlv(TlvType.RESOURCE_VALUE, 0x00, null, Utilities.StringToByteArray("01")),
+                    new Tlv(TlvType.RESOURCE_VALUE, 0x01, null, Utilities.StringToByteArray("00")),
+                    new Tlv(TlvType.MULTIPLE_RESOURCE, 0x02, new Tlv[] {
+                        new Tlv(TlvType.RESOURCE_INSTANCE, 0x7F, null, Utilities.StringToByteArray("07"))
+                    }, null),
+                    new Tlv(TlvType.RESOURCE_VALUE, 0x03, null, Utilities.StringToByteArray("7F"))
+                }, null);
+
+            Assert.Equal(expected, result[0]);
         }
 
         [Theory]
-        [InlineData("C80014", 0)]
-        [InlineData("61013601", 310)]
-        public void TestTlvIdentifier(string input, int expected)
+        [InlineData(TlvType.RESOURCE_VALUE, 0x00, null, null)]
+        [InlineData(TlvType.RESOURCE_INSTANCE, 0x00, null, null)]
+        [InlineData(TlvType.OBJECT_INSTANCE, 0x00, null, new byte[] { 0x01 })]
+        public void TestTlvConstructorException(TlvType type, int identifier, Tlv[] children, byte[] value)
         {
-            int result;
-
-            using (MemoryStream stream = new MemoryStream(Utilities.StringToByteArray(input)))
-            using (ReversedBinaryReader reader = new ReversedBinaryReader(stream))
+            Assert.Throws<ArgumentNullException>(() =>
             {
-                byte typeByte = reader.ReadByte();
-                result = _parser.ParseIdentifier(reader, typeByte);
-            }
-
-            Assert.Equal(expected, result);
-        }
-
-        [Theory]
-        [InlineData("C80209333435303030313233", 9)]
-        [InlineData("C800144F70656E204D6F62696C6520416C6C69616E6365", 20)]
-        public void TestTlvLength(string input, int expected)
-        {
-            int result;
-
-            using (MemoryStream stream = new MemoryStream(Utilities.StringToByteArray(input)))
-            using (ReversedBinaryReader reader = new ReversedBinaryReader(stream))
-            {
-                byte typeByte = reader.ReadByte();
-                TlvType type = _parser.ParseType(typeByte);
-                int identifier = _parser.ParseIdentifier(reader, typeByte);
-
-                result = _parser.ParseLength(reader, typeByte);
-            }
-
-            Assert.Equal(expected, result);
+                new Tlv(type, identifier, children, value);
+            });
         }
     }
 }
