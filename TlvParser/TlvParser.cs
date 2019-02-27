@@ -156,5 +156,105 @@ namespace TlvParser
             return result;
         }
 
+        public static string DecodeString(byte[] input)
+        {
+            return System.Text.Encoding.UTF8.GetString(input);
+        }
+
+        public static long DecodeInteger(byte[] input)
+        {
+            long result;
+
+            if (input.Length == 1)
+                result = input[0];
+            else if (input.Length == 2)
+                result = BitConverter.ToInt16(input, 0);
+            else if (input.Length == 4)
+                result = BitConverter.ToInt32(input, 0);
+            else if (input.Length == 8)
+                result = BitConverter.ToInt64(input, 0);
+            else
+                throw new TlvException($"Failed to decode integer: {input}");
+
+            return result;
+        }
+
+        public static ulong DecodeUInteger(byte[] input)
+        {
+            ulong result;
+
+            if (input.Length == 1)
+                result = input[0];
+            else if (input.Length == 2)
+                result = BitConverter.ToUInt16(input, 0);
+            else if (input.Length == 4)
+                result = BitConverter.ToUInt32(input, 0);
+            else if (input.Length == 8)
+                result = BitConverter.ToUInt64(input, 0);
+            else
+                throw new TlvException($"Failed to decode unsinged integer: {input}");
+
+            return result;
+        }
+
+        public static double DecodeFloat(byte[] input)
+        {
+            double result;
+
+            if (input.Length == 4)
+                result = BitConverter.ToSingle(input, 0);
+            else if (input.Length == 8)
+                result = BitConverter.ToDouble(input, 0);
+            else
+                throw new TlvException($"Failed to decode float: {input}");
+
+            return result;
+        }
+
+        public static bool DecodeBoolean(byte[] input)
+        {
+            bool result;
+            if (input[0] == 0b0000_0001)
+                result = true;
+            else if (input[1] == 0b0000_0000)
+                result = false;
+            else
+                throw new TlvException($"Failed to decode boolean: {input}");
+
+            return result;
+        }
+
+        public static byte[] DecodeOpaque(byte[] input)
+        {
+            return input;
+        }
+
+        public static DateTime DecodeTime(byte[] input)
+        {
+            long seconds = DecodeInteger(input);
+
+            System.DateTime dateTime = new System.DateTime(1970, 1, 1, 0, 0, 0, 0);
+            dateTime = dateTime.AddSeconds(seconds);
+
+            return dateTime;
+        }
+
+        public static Tuple<ushort, ushort> DecodeObjectLink(byte[] input)
+        {
+            ushort objectId;
+            ushort objectInstanceId;
+
+            try
+            {
+                objectId = BitConverter.ToUInt16(input, 0);
+                objectInstanceId = BitConverter.ToUInt16(input, 2);
+            }
+            catch (Exception)
+            {
+                throw new TlvException($"Failed to decode Object link: {input}");
+            }
+
+            return Tuple.Create(objectId, objectInstanceId);
+        }
     }
 }
