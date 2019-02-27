@@ -56,5 +56,18 @@ namespace TlvParser
             return BitConverter.ToUInt64(a64, 0);
         }
 
+        public override float ReadSingle()
+        {
+            a32 = base.ReadBytes(4);
+            Array.Reverse(a32);
+            return BitConverter.ToSingle(a32, 0);
+        }
+
+        public override double ReadDouble()
+        {
+            a64 = base.ReadBytes(8);
+            Array.Reverse(a64);
+            return BitConverter.ToDouble(a64, 0);
+        }
     }
 }
